@@ -164,3 +164,5 @@ void place_players(char **board,char select[],int kar, int N, int M){
 
 
 
+/*fanculo policia frattelo
+gang way or no way*/
