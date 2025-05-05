@@ -6,20 +6,25 @@ char** board(int N, int M);
 void print_board(char** board, int N, int M);
 void free_board(char** board, int N);
 void select_classes(int kar);
-void select_difficulty(int monster_sum, int monster_hp);
+void select_difficulty(int monster_sum, int monster_hp, int count);
 void place_players(char **board,char select[], int kar, int N, int M);
+void place_cosmetics(char **board, int count, int N, int M);
+void place_monsters(char **board, int monster_sum, int N, int M);
 int monster_sum ,monster_hp, kar = 0;
 char select[5];
+int count= 0; //count gia cosmetics
 
 int main() {
     srand(time(NULL));
     int N = 7, M =5; 
     char** map;
     select_classes(kar);
-    select_difficulty(monster_sum,monster_hp);
+    select_difficulty(monster_sum,monster_hp,count);
     map = board(N, M); //desmeyei mnhnmh board[i][j]
     if (map != NULL){
         place_players(map, select, kar, N, M);
+        place_cosmetics(map, count, N, M);
+        place_monsters(map, monster_sum, N, M);
         print_board(map, N, M);
         free_board(map,N);
     }
@@ -64,7 +69,7 @@ void select_classes(int kar) {
             }
         }
         if (select[i] == '-') {
-            i == h_sum;
+            i = h_sum;
             break;
         }
     printf("Heroes selected successfully:\n");
@@ -75,7 +80,7 @@ void select_classes(int kar) {
     }
 }
 
-void select_difficulty(int monster_sum, int monster_hp) {
+void select_difficulty(int monster_sum, int monster_hp, int count) {
     char select;
     printf("Select difficulty:\nEasy: E\nModerate: M\nHard: H\n");
     while (select != 'E' && select != 'M' && select != 'H') {
@@ -83,14 +88,17 @@ void select_difficulty(int monster_sum, int monster_hp) {
         if (select == 'E'){
             monster_hp = (rand() % 3) + 1;
             monster_sum = (rand() % 2) + 1;
+            count=2;
         }
         else if(select == 'M'){
             monster_hp = (rand() % 4) + 1;
             monster_sum = (rand() % 3) + 6;
+            count=4;
         }
         else if(select == 'H'){
             monster_hp = (rand() % 6) + 1;
             monster_sum = (rand() % 3) + 9;
+            count=6;
         } 
     }
 }
@@ -161,8 +169,31 @@ void place_players(char **board,char select[],int kar, int N, int M){
     }  
 }
     
+void place_cosmetics(char **board, int count, int N, int M) {
+    int placed = 0;
+    while (placed < count) {
+        int i = rand() % N;
+        int j = rand() % M;
 
+        if (board[i][j] == '.') {
+            board[i][j] = '@';
+            placed++;
+        }
+    }
+}
 
+void place_monsters(char **board, int monster_sum, int N, int M) {
+    int placed = 0;
+    while (placed < monster_sum) {
+        int i = rand() % N;
+        int j = rand() % M;
+
+        if (board[i][j] == '.') {
+            board[i][j] = '1' + (rand() % 9); // Αριθμοί 1-9
+            placed++;
+        }
+    }
+}
 
 /*fanculo policia frattelo
 gang way or no way*/
