@@ -2,32 +2,39 @@
 #include <stdlib.h>
 #include <time.h>
 
+#define max_monsters_spawned 6
+
 char** board(int N, int M);
 void print_board(char** board, int N, int M);
 void free_board(char** board, int N);
 void select_classes(int kar);
-void select_difficulty(int monster_sum, int monster_hp, int count);
+void select_difficulty();
 void place_players(char **board,char select[], int kar, int N, int M);
-void place_cosmetics(char **board, int count, int N, int M);
-void place_monsters(char **board, int monster_sum, int N, int M);
-int monster_sum ,monster_hp, kar = 0;
-char select[5];
+void place_cosmetic(char **board, int N, int M);
+void place_monsters(char **board, int N, int M);
+int monster_sum, kar = 0;
+int monster_hp[max_monsters_spawned] = {0};//bres kt allo lalh
+char select[5] = {0};
 int count= 0; //count gia cosmetics
 
 int main() {
+    
     srand(time(NULL));
     int N = 7, M =5; 
     char** map;
     select_classes(kar);
-    select_difficulty(monster_sum,monster_hp,count);
+    select_difficulty();
     map = board(N, M); //desmeyei mnhnmh board[i][j]
     if (map != NULL){
         place_players(map, select, kar, N, M);
-        place_cosmetics(map, count, N, M);
-        place_monsters(map, monster_sum, N, M);
+        place_cosmetic(map, N, M);
+        place_monsters(map, N, M);
         print_board(map, N, M);
-        free_board(map,N);
+        
     }
+    free_board(map,N);
+    
+
     return 0;
 }
 
@@ -80,25 +87,37 @@ void select_classes(int kar) {
     }
 }
 
-void select_difficulty(int monster_sum, int monster_hp, int count) {
-    char select;
+void select_difficulty() {
+    char  selection;
+    int temp;
     printf("Select difficulty:\nEasy: E\nModerate: M\nHard: H\n");
-    while (select != 'E' && select != 'M' && select != 'H') {
-        select = getchar(); //while baraei mono scan    
-        if (select == 'E'){
-            monster_hp = (rand() % 3) + 1;
-            monster_sum = (rand() % 2) + 1;
-            count=2;
+
+    while (selection != 'E' && selection != 'M' && selection != 'H') {
+        selection = getchar(); //while baraei mono scan    
+        if (selection == 'E'){
+     
+            monster_sum = (rand() % 3) + 1;
+            for(int i = 0; i < monster_sum; i++){
+                temp = (rand() % 2) + 1; 
+                monster_hp[i] = temp + '\0';
+            }
+            
         }
-        else if(select == 'M'){
-            monster_hp = (rand() % 4) + 1;
-            monster_sum = (rand() % 3) + 6;
-            count=4;
+        else if(selection == 'M'){
+        
+            monster_sum = (rand() % 4) + 1;
+            for (int i = 0; i < monster_sum; i++){
+                temp = (rand() % 3) + 4;
+                monster_hp[i] = temp + '\0';
+            }
         }
-        else if(select == 'H'){
-            monster_hp = (rand() % 6) + 1;
-            monster_sum = (rand() % 3) + 9;
-            count=6;
+        else if(selection == 'H'){
+          
+            monster_sum = (rand() % 6) + 1;
+            for(int i = 0; i < monster_sum; i++){
+                temp = (rand() % 3) + 7;  
+                monster_hp[i] = temp;         
+            }
         } 
     }
 }
@@ -144,6 +163,8 @@ void print_board(char **board, int N, int M) {
         }
         printf("\n");
     }
+    for(int i = 0; i < max_monsters_spawned; i++)
+        monster_hp[i] = '\0';
 }
 
 void free_board(char** board, int N){
@@ -154,7 +175,7 @@ void free_board(char** board, int N){
 }
 
 void place_players(char **board,char select[],int kar, int N, int M){
-    int placed = 0,i = 0;
+    int placed = 0, i= 0;
     char* term;
 
     while (i < select[placed]){
@@ -169,9 +190,9 @@ void place_players(char **board,char select[],int kar, int N, int M){
     }  
 }
     
-void place_cosmetics(char **board, int count, int N, int M) {
+void place_cosmetic(char **board, int N, int M) { //THELEI ENA EPIPLO ANA DWMATIO FANCULO
     int placed = 0;
-    while (placed < count) {
+    while (placed < 1) {
         int i = rand() % N;
         int j = rand() % M;
 
@@ -182,18 +203,15 @@ void place_cosmetics(char **board, int count, int N, int M) {
     }
 }
 
-void place_monsters(char **board, int monster_sum, int N, int M) {
+void place_monsters(char **board,int  N, int M) {
     int placed = 0;
     while (placed < monster_sum) {
         int i = rand() % N;
         int j = rand() % M;
 
-        if (board[i][j] == '.') {
-            board[i][j] = '1' + (rand() % 9); // Αριθμοί 1-9
+        if (board[i][j] == '.') {    
+            board[i][j] = monster_hp[placed] + '0'; // Place one monster at a time
             placed++;
         }
     }
 }
-
-/*fanculo policia frattelo
-gang way or no way*/
