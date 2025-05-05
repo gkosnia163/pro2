@@ -7,26 +7,26 @@
 char** board(int N, int M);
 void print_board(char** board, int N, int M);
 void free_board(char** board, int N);
-void select_classes(int kar);
+void select_classes(int blyat);
 void select_difficulty();
-void place_players(char **board,char select[], int kar, int N, int M);
+void place_players(char **board,char select[], int blyat, int N, int M);
 void place_cosmetic(char **board, int N, int M);
 void place_monsters(char **board, int N, int M);
-int monster_sum, kar = 0;
-int monster_hp[max_monsters_spawned] = {0};//bres kt allo lalh
+int monster_sum, blyat = 0;
+int monster_hp[max_monsters_spawned] = {0};
 char select[5] = {0};
-int count= 0; //count gia cosmetics
+
 
 int main() {
     
     srand(time(NULL));
     int N = 7, M =5; 
     char** map;
-    select_classes(kar);
+    select_classes(blyat);
     select_difficulty();
     map = board(N, M); //desmeyei mnhnmh board[i][j]
     if (map != NULL){
-        place_players(map, select, kar, N, M);
+        place_players(map, select, blyat, N, M);
         place_cosmetic(map, N, M);
         place_monsters(map, N, M);
         print_board(map, N, M);
@@ -42,7 +42,7 @@ int is_valid_hero(char c) {
     return (c == 'b' || c == 'd' || c == 'e' || c == 'm');
 }
 
-void select_classes(int kar) {
+void select_classes(int blyat) {
     select[5] = '\0'; //classes
     int h_sum = 4; //limit gia to posoi paiktes yparxoyn sto tamplo 
     printf("Select up to 4 heroes (barbarian 'b', dwarf 'd', elf 'e', mage 'm'):\ntype - to select difficulty\n");
@@ -71,7 +71,7 @@ void select_classes(int kar) {
                 printf("You already selected that hero. Pick a different one.\n");
             } else {
                 select[i] = input;
-                kar++;
+                blyat++;
                 break;
             }
         }
@@ -163,8 +163,8 @@ void print_board(char **board, int N, int M) {
         }
         printf("\n");
     }
-    for(int i = 0; i < max_monsters_spawned; i++)
-        monster_hp[i] = '\0';
+    /*for(int i = 0; i < max_monsters_spawned; i++)
+        monster_hp[i] = '\0';*/            //de kserw ama einai aparaithto lgka oxi
 }
 
 void free_board(char** board, int N){
@@ -174,7 +174,7 @@ void free_board(char** board, int N){
     free(board);
 }
 
-void place_players(char **board,char select[],int kar, int N, int M){
+void place_players(char **board,char select[],int blyat, int N, int M){
     int placed = 0, i= 0;
     char* term;
 
@@ -190,7 +190,7 @@ void place_players(char **board,char select[],int kar, int N, int M){
     }  
 }
     
-void place_cosmetic(char **board, int N, int M) { //THELEI ENA EPIPLO ANA DWMATIO FANCULO
+void place_cosmetic(char **board, int N, int M) { 
     int placed = 0;
     while (placed < 1) {
         int i = rand() % N;
@@ -210,7 +210,7 @@ void place_monsters(char **board,int  N, int M) {
         int j = rand() % M;
 
         if (board[i][j] == '.') {    
-            board[i][j] = monster_hp[placed] + '0'; // Place one monster at a time
+            board[i][j] = monster_hp[placed] + '0';
             placed++;
         }
     }
