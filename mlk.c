@@ -4,35 +4,49 @@
 
 #define max_monsters_spawned 6
 
-char** board(int N, int M);
-void print_board(char** board, int N, int M);
-void free_board(char** board, int N);
-void select_classes(int blyat);
+typedef struct{
+    char id;
+    int hp;
+    int x,y;
+}Hero;
+
+char** board();
+void print_board(char** board);
+void free_board(char** board);
+void select_classes(int blyat, char select[], Hero heroes[]);
 void select_difficulty();
-void place_players(char **board,char select[], int blyat, int N, int M);
-void place_cosmetic(char **board, int N, int M);
-void place_monsters(char **board, int N, int M);
+void place_players(char **board,char select[],Hero heroes[]);
+void place_cosmetic(char **board);
+void place_monsters(char **board);
+//void move(char **board);
 int monster_sum, blyat = 0;
 int monster_hp[max_monsters_spawned] = {0};
 char select[5] = {0};
-
+int N = 7, M =5; 
 
 int main() {
-    
+    Hero heroes[4];
     srand(time(NULL));
-    int N = 7, M =5; 
+    
     char** map;
-    select_classes(blyat);
+    select_classes(blyat, select, heroes);
     select_difficulty();
     map = board(N, M); //desmeyei mnhnmh board[i][j]
     if (map != NULL){
-        place_players(map, select, blyat, N, M);
-        place_cosmetic(map, N, M);
-        place_monsters(map, N, M);
-        print_board(map, N, M);
-        
+        place_players(map, select, heroes);
+        place_cosmetic(map);
+        place_monsters(map);
+        print_board(map);
     }
-    free_board(map,N);
+    while(1){
+        int sum=0;
+        sum++;
+        for (int i = 0; i < 4; i++) {
+            printf("Hero %c: HP=%d, Position=(%d,%d)\n", heroes[i].id, heroes[i].hp, heroes[i].x, heroes[i].y);
+        }
+        break;
+    }
+    free_board(map);
     
 
     return 0;
@@ -42,17 +56,17 @@ int is_valid_hero(char c) {
     return (c == 'b' || c == 'd' || c == 'e' || c == 'm');
 }
 
-void select_classes(int blyat) {
-    select[5] = '\0'; //classes
-    int h_sum = 4; //limit gia to posoi paiktes yparxoyn sto tamplo 
+void select_classes(int blyat, char select[], Hero heroes[]) {
+    select[5] = '\0'; // classes
+    int h_sum = 4; // limit for the number of players on the board
     printf("Select up to 4 heroes (barbarian 'b', dwarf 'd', elf 'e', mage 'm'):\ntype - to select difficulty\n");
     for (int i = 0; i < h_sum; i++) {
         char input;
-        
+
         while (1) {
             printf("Hero %d: ", i + 1);
             scanf(" %c", &input);
-            if (input == '-' && select[i] != select[0]) { //gamaw
+            if (input == '-' && i > 0) { // allow exiting after at least one hero is selected
                 i = h_sum;
                 break;
             }
@@ -70,7 +84,17 @@ void select_classes(int blyat) {
             if (already_picked) {
                 printf("You already selected that hero. Pick a different one.\n");
             } else {
-                select[i] = input;
+                select[i] = input; 
+                heroes[i].id = input;
+                if(input == 'b')
+                    heroes[i].hp = 8;
+                else if(input == 'd')
+                    heroes[i].hp = 7;
+                else if(input == 'e')
+                    heroes[i].hp = 6;
+                else if(input == 'm')
+                    heroes[i].hp = 4;
+                
                 blyat++;
                 break;
             }
@@ -122,7 +146,7 @@ void select_difficulty() {
     }
 }
 
-char** board(int N, int M){
+char** board(){
     char** map = (char**)malloc(sizeof(char*) * N);
     if(map == NULL){
         printf("error allocating memory!\n");
@@ -145,7 +169,7 @@ char** board(int N, int M){
     
 }
 
-void print_board(char **board, int N, int M) {   
+void print_board(char **board) {   
     printf("  ");
     for (int i = 0; i < M; i++){ 
         printf("%c ", 'A' + i);
@@ -167,30 +191,30 @@ void print_board(char **board, int N, int M) {
         monster_hp[i] = '\0';*/            //de kserw ama einai aparaithto lgka oxi
 }
 
-void free_board(char** board, int N){
+void free_board(char** board){
     for (int i = 0; i < N; i++) {
         free(board[i]);
     }
     free(board);
 }
 
-void place_players(char **board,char select[],int blyat, int N, int M){
-    int placed = 0, i= 0;
-    char* term;
+void place_players(char **board, char select[], Hero heroes[]) {
+    int placed = 0;
 
-    while (i < select[placed]){
+    while (placed < 4 && select[placed] != '\0') { 
         int i = rand() % N;
         int j = rand() % M;
 
-        if (board[i][j] == '.'){
-            term = &select[placed];
-            board[i][j] = *term;
+        if (board[i][j] == '.') { 
+            board[i][j] = select[placed];
+            heroes[placed].x = i; 
+            heroes[placed].y = j;
             placed++;
         }
-    }  
+    }
 }
     
-void place_cosmetic(char **board, int N, int M) { 
+void place_cosmetic(char **board) { 
     int placed = 0;
     while (placed < 1) {
         int i = rand() % N;
@@ -203,7 +227,7 @@ void place_cosmetic(char **board, int N, int M) {
     }
 }
 
-void place_monsters(char **board,int  N, int M) {
+void place_monsters(char **board) {
     int placed = 0;
     while (placed < monster_sum) {
         int i = rand() % N;
