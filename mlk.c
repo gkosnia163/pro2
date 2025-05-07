@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <ctype.h>
 
 #define max_monsters_spawned 6
 
@@ -8,6 +9,7 @@ typedef struct{
     char id;
     int hp;
     int x,y;
+    int moves;
 }Hero;
 
 char** board();
@@ -18,7 +20,7 @@ void select_difficulty();
 void place_players(char **board,char select[],Hero heroes[]);
 void place_cosmetic(char **board);
 void place_monsters(char **board);
-//void move(char **board);
+void move(char **board, Hero heroes[]);
 int monster_sum, blyat = 0;
 int monster_hp[max_monsters_spawned] = {0};
 char select[5] = {0};
@@ -40,11 +42,10 @@ int main() {
     }
     while(1){
         int sum=0;
-        sum++;
-        for (int i = 0; i < 4; i++) {
-            printf("Hero %c: HP=%d, Position=(%d,%d)\n", heroes[i].id, heroes[i].hp, heroes[i].x, heroes[i].y);
-        }
-        break;
+        sum++;     
+        move(map, heroes);
+        
+    break;
     }
     free_board(map);
     
@@ -55,6 +56,11 @@ int main() {
 int is_valid_hero(char c) {
     return (c == 'b' || c == 'd' || c == 'e' || c == 'm');
 }
+
+char valid_direction(char c) {
+    return (c == 'U' || c == 'L' || c == 'R' || c == 'L');
+}
+
 
 void select_classes(int blyat, char select[], Hero heroes[]) {
     select[5] = '\0'; // classes
@@ -112,7 +118,7 @@ void select_classes(int blyat, char select[], Hero heroes[]) {
 }
 
 void select_difficulty() {
-    char  selection;
+    char selection;
     int temp;
     printf("Select difficulty:\nEasy: E\nModerate: M\nHard: H\n");
 
@@ -239,3 +245,77 @@ void place_monsters(char **board) {
         }
     }
 }
+
+void move(char **board, Hero heroes[]){
+    char input;
+    printf("Select a character to move\n");
+    scanf(" %c", &input);
+
+    int valid = 0;     
+    int h;           //bale na ginetai to input kefalaio
+    while(!valid){
+        for (int i = 0; i < 4; i++) {
+            if (is_valid_hero(input) && heroes[i].id == input) { 
+                valid = 1; 
+                h= i;
+                break;
+            }
+        }
+        if (!valid) {
+            printf("Invalid or unselected hero. Try again.\n");
+            return;
+        }
+        scanf("%c", &input);
+    }
+    int steps = 1;   
+    char direction;
+    printf("%c> ", select[h]);
+    scanf(" %c%d", &direction, &steps);
+    direction = toupper(direction);
+
+    int target_x = heroes[h].x;
+    int target_y = heroes[h].y;
+
+    switch (direction) {
+        case 'U':
+            target_x -= steps;
+            break;
+        case 'D':
+            target_x += steps;
+            break;
+        case 'L':
+            target_y -= steps;
+            break;
+        case 'R':
+            target_y += steps;
+            break;
+        default:
+            printf("check\n");
+            return;
+    }
+
+    if(board[target_x][target_y] != '.'){
+        printf("spot is occupied \n");
+        return;
+    }
+    switch (direction){
+        case 'U':
+            heroes[h].x -= steps;
+            break;
+        case 'D':
+            heroes[h].x += steps;
+            break;
+        case 'L':
+            heroes[h].y += steps;
+            break;
+        case 'R':
+            heroes[h].y -= steps;
+            break;
+        default:
+            printf("check\n");    
+            return;
+    }
+        place_players(board, select, heroes);
+}
+    
+    
