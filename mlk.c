@@ -58,22 +58,22 @@ int is_valid_hero(char c) {
 }
 
 char valid_direction(char c) {
-    return (c == 'U' || c == 'L' || c == 'R' || c == 'L');
+    return (c == 'U' || c == 'L' || c == 'R' || c == 'D');
 }
 
-void mvmnt(int x, int y, char c,  int b) {
+void mvmnt(int *x, int *y, char c,  int b) {
     switch (c) {
         case 'U':
-            x -= b;
+            *x -= b;
             break;
         case 'D':
-            x += b;
+            *x += b;
             break;
         case 'L':
-            y -= b;
+            *y -= b;
             break;
         case 'R':
-            y += b;
+            *y += b;
             break;
         default:
             printf("check\n");
@@ -81,17 +81,17 @@ void mvmnt(int x, int y, char c,  int b) {
     }
 }
 
-void boundandemptiness(char** board, int nx, int ny, int stop, int t_s, int check){
+void boundandemptiness(char** board, int nx, int ny, int* stop, int t_s, int* check){
     if (nx < 0 || nx >= N || ny < 0 || ny >= M) {
         printf("Move out of bounds at step %d. Stopping.\n", t_s + 1);
-        stop = 1;
-        check = 1;
+        *stop = 1;
+        *check = 1;
     }
 
     if (board[nx][ny] != '.') {
         printf("Blocked at (%d, %d) by '%c'. Stopping.\n", nx, ny, board[nx][ny]);
-        stop = 1;
-        check = 1;
+        *stop = 1;
+        *check = 1;
     }
 }
 
@@ -311,7 +311,6 @@ void move(char **board, Hero heroes[]){
     char movement[32]; 
     scanf("%s", movement); 
     
-    int check = 0;
     int m_l = heroes[h].moves; //na allaxtei analogos to struct moves
     int total_steps = 0;
     int cur_x = heroes[h].x;
@@ -319,7 +318,7 @@ void move(char **board, Hero heroes[]){
     int old_x = cur_x;
     int old_y = cur_y;
     int i = 0;
-    int stop = 0;
+    int stop =0;
     while(movement[i] != '\0' && total_steps < m_l && !stop){
         char direction = movement[i];
         if (!valid_direction(movement[i])){
@@ -334,12 +333,20 @@ void move(char **board, Hero heroes[]){
             i++;
         }
         if(steps == 0) steps = 1;
-        for (int h = 0; h < steps && total_steps < m_l && !stop; h++){
+        for (int j = 0; j < steps && total_steps < m_l; j++){
             int new_x = cur_x;
             int new_y = cur_y;
-            mvmnt(new_x, new_y, direction, steps);
-            boundandemptiness(board, new_x, new_y, &stop, total_steps, &check); 
-            if (check==1) break;
+            mvmnt(&new_x, &new_y, direction, steps);
+            if (new_x < 0 || new_x >= N || new_y < 0 || new_y >= M) {
+                stop = 1;
+                break;
+                printf("skata\n");
+            }
+            if (board[new_x][new_y] != '.') {
+                printf("Blocked at (%d, %d) by '%c'. Stopping.\n", new_x, new_y, board[new_x][new_y]);
+                stop = 1;
+                break;
+            }
 
             board[cur_x][cur_y] = '.';
             cur_x = new_x;
@@ -351,5 +358,5 @@ void move(char **board, Hero heroes[]){
     heroes[h].x = cur_x;
     heroes[h].y = cur_y;
 }
-    
+
     
