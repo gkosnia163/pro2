@@ -44,7 +44,7 @@ int main() {
         int sum=0;
         sum++;     
         move(map, heroes);
-        
+        print_board(map);
     break;
     }
     free_board(map);
@@ -59,6 +59,40 @@ int is_valid_hero(char c) {
 
 char valid_direction(char c) {
     return (c == 'U' || c == 'L' || c == 'R' || c == 'L');
+}
+
+void mvmnt(int x, int y, char c,  int b) {
+    switch (c) {
+        case 'U':
+            x -= b;
+            break;
+        case 'D':
+            x += b;
+            break;
+        case 'L':
+            y -= b;
+            break;
+        case 'R':
+            y += b;
+            break;
+        default:
+            printf("check\n");
+            return;
+    }
+}
+
+void boundandemptiness(char** board, int nx, int ny, int stop, int t_s, int check){
+    if (nx < 0 || nx >= N || ny < 0 || ny >= M) {
+        printf("Move out of bounds at step %d. Stopping.\n", t_s + 1);
+        stop = 1;
+        check = 1;
+    }
+
+    if (board[nx][ny] != '.') {
+        printf("Blocked at (%d, %d) by '%c'. Stopping.\n", nx, ny, board[nx][ny]);
+        stop = 1;
+        check = 1;
+    }
 }
 
 
@@ -92,15 +126,22 @@ void select_classes(int blyat, char select[], Hero heroes[]) {
             } else {
                 select[i] = input; 
                 heroes[i].id = input;
-                if(input == 'b')
+                if(input == 'b'){
                     heroes[i].hp = 8;
-                else if(input == 'd')
+                    heroes[i].moves = 8;
+                }
+                else if(input == 'd'){
                     heroes[i].hp = 7;
-                else if(input == 'e')
+                    heroes[i].moves = 6;
+                }
+                else if(input == 'e'){
                     heroes[i].hp = 6;
-                else if(input == 'm')
+                    heroes[i].moves = 12;
+                }
+                else if(input == 'm') {// W magos
                     heroes[i].hp = 4;
-                
+                    heroes[i].moves = 10;
+                }
                 blyat++;
                 break;
             }
@@ -212,7 +253,8 @@ void place_players(char **board, char select[], Hero heroes[]) {
         int j = rand() % M;
 
         if (board[i][j] == '.') { 
-            board[i][j] = select[placed];
+            board[i][j] = select[placed]; 
+            heroes[placed].id = select[placed]; 
             heroes[placed].x = i; 
             heroes[placed].y = j;
             placed++;
@@ -247,75 +289,67 @@ void place_monsters(char **board) {
 }
 
 void move(char **board, Hero heroes[]){
-    char input;
+    char input = '\0';        //epilogh hero
     printf("Select a character to move\n");
     scanf(" %c", &input);
 
     int valid = 0;     
-    int h;           //bale na ginetai to input kefalaio
-    while(!valid){
-        for (int i = 0; i < 4; i++) {
-            if (is_valid_hero(input) && heroes[i].id == input) { 
-                valid = 1; 
-                h= i;
-                break;
-            }
+    int h = -1;           //bale na ginetai to input kefalaio                
+    for (int i = 0; i < 4; i++) {//elenxos ama edwse swsto hero
+        if (is_valid_hero(input) && heroes[i].id == input) { 
+            valid = 1; 
+            h = i;
+            break;
         }
-        if (!valid) {
-            printf("Invalid or unselected hero. Try again.\n");
-            return;
-        }
-        scanf("%c", &input);
     }
-    int steps = 1;   
-    char direction;
-    printf("%c> ", select[h]);
-    scanf(" %c%d", &direction, &steps);
-    direction = toupper(direction);
-
-    int target_x = heroes[h].x;
-    int target_y = heroes[h].y;
-
-    switch (direction) {
-        case 'U':
-            target_x -= steps;
-            break;
-        case 'D':
-            target_x += steps;
-            break;
-        case 'L':
-            target_y -= steps;
-            break;
-        case 'R':
-            target_y += steps;
-            break;
-        default:
-            printf("check\n");
-            return;
-    }
-
-    if(board[target_x][target_y] != '.'){
-        printf("spot is occupied \n");
+    if (!valid) {
+        printf("Invalid or unselected hero. Try again.\n");
         return;
     }
-    switch (direction){
-        case 'U':
-            heroes[h].x -= steps;
-            break;
-        case 'D':
-            heroes[h].x += steps;
-            break;
-        case 'L':
-            heroes[h].y += steps;
-            break;
-        case 'R':
-            heroes[h].y -= steps;
-            break;
-        default:
-            printf("check\n");    
+        
+    printf("%c> ", toupper(heroes[h].id));
+    char movement[32]; 
+    scanf("%s", movement); 
+    
+    int check = 0;
+    int m_l = heroes[h].moves; //na allaxtei analogos to struct moves
+    int total_steps = 0;
+    int cur_x = heroes[h].x;
+    int cur_y = heroes[h].y;
+    int old_x = cur_x;
+    int old_y = cur_y;
+    int i = 0;
+    int stop = 0;
+    while(movement[i] != '\0' && total_steps < m_l && !stop){
+        char direction = movement[i];
+        if (!valid_direction(movement[i])){
+            printf("shi\n");
             return;
+        }
+        i++;
+
+        int steps = 0;
+        while(isdigit(movement[i])){
+            steps = steps * 10 + (movement[i] - '0');
+            i++;
+        }
+        if(steps == 0) steps = 1;
+        for (int h = 0; h < steps && total_steps < m_l && !stop; h++){
+            int new_x = cur_x;
+            int new_y = cur_y;
+            mvmnt(new_x, new_y, direction, steps);
+            boundandemptiness(board, new_x, new_y, &stop, total_steps, &check); 
+            if (check==1) break;
+
+            board[cur_x][cur_y] = '.';
+            cur_x = new_x;
+            cur_y = new_y;
+            board[cur_x][cur_y] = heroes[h].id;
+            total_steps++;
+        }
     }
-        place_players(board, select, heroes);
+    heroes[h].x = cur_x;
+    heroes[h].y = cur_y;
 }
     
     
