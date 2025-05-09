@@ -2,14 +2,12 @@
 #include <stdlib.h>
 #include <time.h>
 #include <ctype.h>
-
-#define max_monsters_spawned 6
-
 typedef struct{
     char id;
     int hp;
     int x,y;
     int moves;
+    int attack;
 }Hero;
 
 char** board();
@@ -20,9 +18,9 @@ void select_difficulty();
 void place_players(char **board,char select[],Hero heroes[]);
 void place_cosmetic(char **board);
 void place_monsters(char **board);
-void move(char **board, Hero heroes[]);
+void game_cmnds(char **board, Hero heroes[]);
 int monster_sum, blyat = 0;
-int monster_hp[max_monsters_spawned] = {0};
+int monster_hp[6] = {0};
 char select[5] = {0};
 int N = 7, M =5; 
 
@@ -44,8 +42,7 @@ int main() {
         int sum=0;
         sum++;     
         move(map, heroes);
-        print_board(map);
-    break;
+        break;
     }
     free_board(map);
     
@@ -81,17 +78,33 @@ void mvmnt(int *x, int *y, char c,  int b) {
     }
 }
 
-void boundandemptiness(char** board, int nx, int ny, int* stop, int t_s, int* check){
+void exodos(char **board, char input[], int i){
+    while(input[i] != '\0'){
+        if (toupper(input[i]) == 'O') {
+            exit(0);  
+        }
+        i++;
+    }
+}
+
+int end_round(char **board, char input[], int i){
+    while(input[i] != '\0'){
+        if (toupper(input[i]) == 'X') {
+            return 1;  
+        }
+        i++;
+    }
+}
+
+void check_move(char** board, int nx, int ny, int* stop, int t_s){
     if (nx < 0 || nx >= N || ny < 0 || ny >= M) {
-        printf("Move out of bounds at step %d. Stopping.\n", t_s + 1);
+        printf("ektws orion lalh\n");
         *stop = 1;
-        *check = 1;
     }
 
     if (board[nx][ny] != '.') {
-        printf("Blocked at (%d, %d) by '%c'. Stopping.\n", nx, ny, board[nx][ny]);
+        printf("kati exei ekei lalh\n");
         *stop = 1;
-        *check = 1;
     }
 }
 
@@ -288,11 +301,12 @@ void place_monsters(char **board) {
     }
 }
 
-void move(char **board, Hero heroes[]){
+void game_cmnds(char **board, Hero heroes[]){
     char input = '\0';        //epilogh hero
-    printf("Select a character to move\n");
-    scanf(" %c", &input);
-
+    printf("Select character to move /continue game /exit\ncommands:\n > ");
+    scanf(" %c", &input);     //kathe fora pou scannareis input na thymase na bazeis tis dyo synartiseis parakatw gia na xei epiloges o user
+    exodos(board, &input, '\0');
+    if (end_round(board, &input, '\0') == 1) return;
     int valid = 0;     
     int h = -1;           //bale na ginetai to input kefalaio                
     for (int i = 0; i < 4; i++) {//elenxos ama edwse swsto hero
@@ -307,11 +321,11 @@ void move(char **board, Hero heroes[]){
         return;
     }
         
-    printf("%c> ", toupper(heroes[h].id));
+    printf("commands:\n%c> ", toupper(heroes[h].id));
     char movement[32]; 
     scanf("%s", movement); 
-    
-    int m_l = heroes[h].moves; //na allaxtei analogos to struct moves
+    exodos(board, movement, h);     //to idio kai edw
+    if (end_round(board, &input, '\0') == 1) return;
     int total_steps = 0;
     int cur_x = heroes[h].x;
     int cur_y = heroes[h].y;
@@ -319,7 +333,9 @@ void move(char **board, Hero heroes[]){
     int old_y = cur_y;
     int i = 0;
     int stop =0;
-    while(movement[i] != '\0' && total_steps < m_l && !stop){
+    int check = 0;
+    int* stop_p = &stop;
+    while(movement[i] != '\0' && total_steps < heroes[h].moves && !stop){
         char direction = movement[i];
         if (!valid_direction(movement[i])){
             printf("shi\n");
@@ -333,21 +349,12 @@ void move(char **board, Hero heroes[]){
             i++;
         }
         if(steps == 0) steps = 1;
-        for (int j = 0; j < steps && total_steps < m_l; j++){
+        for (int j = 0; j < steps && total_steps < heroes[h].moves; j++){
             int new_x = cur_x;
             int new_y = cur_y;
-            mvmnt(&new_x, &new_y, direction, steps);
-            if (new_x < 0 || new_x >= N || new_y < 0 || new_y >= M) {
-                stop = 1;
-                break;
-                printf("skata\n");
-            }
-            if (board[new_x][new_y] != '.') {
-                printf("Blocked at (%d, %d) by '%c'. Stopping.\n", new_x, new_y, board[new_x][new_y]);
-                stop = 1;
-                break;
-            }
-
+            mvmnt(&new_x, &new_y, direction, 1); //thelei 1 oxi steps gt baraeu oses fores einai ta steps
+            check_move(board, new_x, new_y, stop_p, total_steps);
+            if(*stop_p) break;
             board[cur_x][cur_y] = '.';
             cur_x = new_x;
             cur_y = new_y;
@@ -357,6 +364,5 @@ void move(char **board, Hero heroes[]){
     }
     heroes[h].x = cur_x;
     heroes[h].y = cur_y;
+    print_board(board);
 }
-
-    
