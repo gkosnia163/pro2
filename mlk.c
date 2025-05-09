@@ -41,8 +41,8 @@ int main() {
     while(1){
         int sum=0;
         sum++;     
-        move(map, heroes);
-        break;
+        game_cmnds(map, heroes);
+        printf("\n gyra toy zargon\n");
     }
     free_board(map);
     
@@ -96,15 +96,15 @@ int end_round(char **board, char input[], int i){
     }
 }
 
-void check_move(char** board, int nx, int ny, int* stop, int t_s){
+int check_move(char** board, int nx, int ny, int t_s){
     if (nx < 0 || nx >= N || ny < 0 || ny >= M) {
         printf("ektws orion lalh\n");
-        *stop = 1;
+        return 1;
     }
 
     if (board[nx][ny] != '.') {
         printf("kati exei ekei lalh\n");
-        *stop = 1;
+        return 1;
     }
 }
 
@@ -303,12 +303,12 @@ void place_monsters(char **board) {
 
 void game_cmnds(char **board, Hero heroes[]){
     char input = '\0';        //epilogh hero
-    printf("Select character to move /continue game /exit\ncommands:\n > ");
-    scanf(" %c", &input);     //kathe fora pou scannareis input na thymase na bazeis tis dyo synartiseis parakatw gia na xei epiloges o user
-    exodos(board, &input, '\0');
+    printf("choose a hero /continue game /exit\ncommands:\n > ");
+    scanf(" %c", &input);               
+    exodos(board, &input, '\0');    //exodos kai end_round barane elenxous sto input tou user 'X' / 'O'
     if (end_round(board, &input, '\0') == 1) return;
     int valid = 0;     
-    int h = -1;           //bale na ginetai to input kefalaio                
+    int h = -1;                          
     for (int i = 0; i < 4; i++) {//elenxos ama edwse swsto hero
         if (is_valid_hero(input) && heroes[i].id == input) { 
             valid = 1; 
@@ -323,9 +323,10 @@ void game_cmnds(char **board, Hero heroes[]){
         
     printf("commands:\n%c> ", toupper(heroes[h].id));
     char movement[32]; 
-    scanf("%s", movement); 
+    scanf("%s", movement);
     exodos(board, movement, h);     //to idio kai edw
     if (end_round(board, &input, '\0') == 1) return;
+
     int total_steps = 0;
     int cur_x = heroes[h].x;
     int cur_y = heroes[h].y;
@@ -334,7 +335,7 @@ void game_cmnds(char **board, Hero heroes[]){
     int i = 0;
     int stop =0;
     int check = 0;
-    int* stop_p = &stop;
+    
     while(movement[i] != '\0' && total_steps < heroes[h].moves && !stop){
         char direction = movement[i];
         if (!valid_direction(movement[i])){
@@ -353,8 +354,7 @@ void game_cmnds(char **board, Hero heroes[]){
             int new_x = cur_x;
             int new_y = cur_y;
             mvmnt(&new_x, &new_y, direction, 1); //thelei 1 oxi steps gt baraeu oses fores einai ta steps
-            check_move(board, new_x, new_y, stop_p, total_steps);
-            if(*stop_p) break;
+            if(!check_move(board, new_x, new_y, total_steps)) return;
             board[cur_x][cur_y] = '.';
             cur_x = new_x;
             cur_y = new_y;
