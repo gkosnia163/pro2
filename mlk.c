@@ -45,11 +45,9 @@ int main() {
         place_monsters(map);
         print_board(map);
     }
-    while(1){
-        int sum=0;
-        sum++;     
+    while(1){    
         game_cmnds(map, heroes);
-        printf("\ntelos comms\n");
+       // zargon(map, heroes);
     }
     free_board(map);
     
@@ -120,6 +118,8 @@ int check_move(char** board, int nx, int ny){
     }
     return 0;
 }
+
+
 
 void attack(char** board, Hero *heroes){
     int x, y;
