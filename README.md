@@ -1,5 +1,3 @@
 /*
-paixnidi Hero Quest grammeno se c
-
-kanones tha toys grapsw meta brm tr.
+Projects programmatismoy 2
 */
