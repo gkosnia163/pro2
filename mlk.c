@@ -125,7 +125,7 @@ void attack(char** board, Hero *heroes){
     int x, y;
     printf("%c attacking: (grammes sthles)\n", heroes->id);
     scanf("%d %d", &x, &y);
-    x--;
+    x--; //eprepe na mpei alliws edeixne lathos location
     y--;
     char target = board[x][y];
     if (target == '.' || target == '@' || x < 0 || y < 0 || x >= N || y >= M) {
