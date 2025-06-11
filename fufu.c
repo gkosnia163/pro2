@@ -18,8 +18,9 @@ typedef struct wList
 typedef wordList wl;       //na nai pio syntomo
 typedef wordList *wlPtr; 
 
-//wordList *createNode(char* input);
 void insert(wordList **wlPtr, char* input, int insertionMode);
+void delete(wordList **wlPtr, char* input);
+void rm_newline_space(char *x);
 int elenxos_input(char* input);
 void printList(wl *head);
 int wlenght(char* word);
@@ -32,40 +33,71 @@ int main()
     if (input == NULL) return 1;
     while(1){
     printf("\ncmds: insert / delete / exit\n$>");  
-    scanf("%s", input);
+    fgets(input, sizeof(input), stdin);
+
 
     switch(elenxos_input(input)){
         case 1:
-            printf("$> insert ");
-            while(getchar() != '\n');
+            if(strcmp(input, "insert") == 0 || strcmp(input, "insert:") == 0){ //periptwsh na grafei o user insert:\n
+                printf("$>insert: ");
                 if (fgets(input, 100, stdin) != NULL){
-                    input[strcspn(input, "\n")] = '\0';
+                    rm_newline_space(input);
                     insert(&head, input, 1);
                 } else printf("error read\n");
+            }
+            else if (strncmp(input, "insert: ", 8) == 0 && strlen(input) > 8){
+                char* usr_input = malloc(100 * sizeof(char)); // user input, einai olo to input ektos to "insert:"
+                strcpy(usr_input, input +8);
+                insert(&head, usr_input, 1);
+                free(usr_input);
+            }
             printList(head);
             break;
-        case 2:
+        case 2:// exit case
             printf("\nexiting\n\n");
             printList(head);
             free(input);
             return 0;
-        case 3:
-            printf("2");
+        case 3: // delete case
+            if(strcmp(input, "delete") == 0 || strcmp(input, "delete:") == 0){ //periptwsh na grafei o user insert:\n
+                printf("$>delete: ");
+                if (fgets(input, 100, stdin) != NULL){
+                    rm_newline_space(input);
+                    delete(&head, input);
+                }
+            }
+            else if (strncmp(input, "delete: ", 8) == 0 && strlen(input) > 8){
+                char* usr_input = malloc(100 * sizeof(char)); // user input, einai olo to input ektos to "insert:"
+                strcpy(usr_input, input +8);
+                delete(&head, usr_input);
+                free(usr_input);
+            }
+            printList(head);
             break;
         default:
             printf("wrong input lalh\n");
     }
 }
-
     free(input);
     return 0;
 }
 
 int elenxos_input(char* input){
-    if(strcmp(input, "insert") == 0) return 1; //to strstr prepei na gyrnaei NULL se false  
-    else if (strcmp(input, "exit") == 0) return 2;
-    else if (strcmp(input, "delete") == 0) return 3;    
-    else return 0;
+    rm_newline_space(input);
+    if (strcmp(input, "insert") == 0 || strcmp(input, "insert:") == 0) return 1;//gia kapoio logo ama bgaleis ths strcmp "input:" de leitourgei tf
+    if (strncmp(input, "insert: ", 8) == 0 && strlen(input) > 8) return 1;
+    if (strcmp(input, "exit") == 0) return 2;
+    if (strcmp(input, "delete") == 0 || strcmp(input, "delete:") == 0) return 3;
+    if (strncmp(input, "delete: ", 8) == 0 && strlen(input) > 8) return 3;
+    return 0;
+}
+
+void rm_newline_space(char* x){ //remove newline
+    int len = strlen(x);
+    while(len > 0 && (x[len-1] == '\n' || x[len-1] == ' ')){
+        x[len-1] = '\0';
+        len--;
+    }
 }
 
 int notletter(char c) {
@@ -75,7 +107,7 @@ int notletter(char c) {
 }
 
 void insert(wl **wlPtr, char* input, int insertionMode){
-    if(input == NULL || strlen(input) == 0) return;//ftiakse elenxo swsta ama input einai enter sketo
+    if(input == NULL || strlen(input) == 0) return;
 
     int i = 0, start = 0, end = 0;
     int len = strlen(input);
@@ -120,7 +152,7 @@ void insert(wl **wlPtr, char* input, int insertionMode){
                             wl *prev = NULL;
 
                             while(current != NULL && strcmp(cleaned, current->word) > 0){ //compare 'input' me current 'word' na exei thetiko arithmo 
-                                prev = current;                                         //dld na nai megalytero to value tou input se ascii plhktrologio 
+                                prev = current;                                         //dld na nai megalytero to value tou input se ascii value 
                                 current = current->next;                                //alfabhtikh taksinomish
                             }
 
@@ -144,6 +176,42 @@ void insert(wl **wlPtr, char* input, int insertionMode){
     }    
 }
 
+void delete(wl **wlPtr, char* input){
+    if (input == NULL || strlen(input) == 0) return; // elenxos kenou
+
+    int i,j;
+    char* token = strtok(input, " "); //delete, kanei tokenize kathe katharh leksh
+    while(token != NULL){
+        char cleaned[172] = {0}; // megalyterh leksh ths ellhnikhs
+        j = 0;
+        for(i = 0; token[i] != '\0'; i++){
+            if(isalpha((unsigned char)token[i])){
+                cleaned[j++] = toupper(token[i]);
+            }
+        }
+        cleaned[j] = '\0';
+        if(j == 0){
+            token = strtok(NULL, " ");
+            continue;
+        }
+    
+        wl* current = *wlPtr;
+        while(current != NULL && strcmp(current->word, cleaned) != 0){
+            current = current->next;
+        }
+        if(current == NULL) printf("word not found, not inputed properly\n");
+        else{
+            printf("word %s, removed succesfully\n", cleaned);
+            if(current->prev != NULL) current->prev->next = current->next;
+            else *wlPtr = current->next;
+            
+            if(current->next != NULL) current->next->prev = current->prev;
+            free(current->word);
+            free(current);
+        }
+        token = strtok(NULL, " ");
+    }   
+}
 int wlenght(char *word){
     int i, temp = 0;
     for(i = 0; word[i] != '\0'; i++){
@@ -176,26 +244,3 @@ void printList(wl *head)
         head = head->next;
     }
 }
-
-
-
-/*
-wordList *createNode(char* input){
-    wordList *new_node = (wordList*)malloc(sizeof(wordList));
-    if (new_node == NULL){
-        printf("failed\n");
-        return NULL;
-    }
-    new_node->word = input; //malloc kai antigrafh
-    if (new_node->word == NULL){
-        free(new_node);
-        printf("failed strdup\n");
-        return NULL;
-    }
-
-    new_node->next = NULL;
-    new_node->prev = NULL;
-    return new_node;
-}*/
-
-
