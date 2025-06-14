@@ -26,11 +26,13 @@ static void rm_newline_space(char *x);
 static int elenxos_input(char* input);
 static void printList(wl *head);
 static void showfwd(wl *head, int num);
+static void showrev(wl *tail, int num);
 static void nuke_stdin(void);
 static int wlenght(const char* word);
 static int uniql(const char* word);
 static void freeL(wl* head);
-static void showrev(wl *tail, int num);
+static void findfwd(wl* head, const char* artiko, int num);
+static void findrev(wl* tail, const char* artiko, int num);
 
 int main()
 {
@@ -40,7 +42,7 @@ int main()
     if (input == NULL) return 1;
     
     while(1){
-    printf("\ncmds: insert / delete / exit / showfwd / showrev\n$>");
+    printf("\ncmds: insert / delete / exit / showfwd / showrev / findfwd / findrev\n$>");
     if(!fgets(input, BUFFER, stdin)) break; //+elenxos
    
 
@@ -81,25 +83,42 @@ int main()
             break;
         }
 
-        case 4: {
+        case 4: { //showfwd case
                 int num;
-                if (sscanf(input, "showfwd: %d", &num) == 1) {
+                if (sscanf(input, "showfwd: %d", &num) == 1) 
                     showfwd(head, num);
-                } else {
-                    printf("wrong input\n");
-                }
+                else printf("wrong input\n");
                 break;
         }
     
-        case 5:{
+        case 5:{ //showrev case
                 int num;
-                if (sscanf(input, "showrev: %d", &num) == 1) {
+                if (sscanf(input, "showrev: %d", &num) == 1) 
                     showrev(tail, num);
-                } else {
-                    printf("wrong input\n");
-                }
+                else printf("wrong input\n");
                 break;
         }
+    
+        case 6: {
+            char S[BUFFER];
+            int N;
+            if (sscanf(input, "findfwd: %256s %d", S, &N) == 2) //
+                findfwd(head, S, N);
+            else printf("wong input\n");
+
+            break;
+        } 
+
+        case 7: {
+            char S[BUFFER];
+            int N;
+            if (sscanf(input, "findrev: %256s %d", S, &N) == 2) //
+                findrev(tail, S, N);
+            else printf("wong input\n");
+
+            break;
+        }
+
 
         default: printf("wrong input lalh\n"); printList(head);
         }
@@ -116,6 +135,8 @@ static int elenxos_input(char* input){     //yparxoyn 2 if gia kathe case etsi w
     if(!strncmp(input,"delete", 6)) return 3;
     if(!strncmp(input,"showfwd:", 8)) return 4;
     if(!strncmp(input,"showrev:", 8)) return 5;
+    if(!strncmp(input,"findfwd:", 8)) return 6;
+    if(!strncmp(input,"findrev:", 8)) return 7;
     
     return 0;
 }
@@ -280,7 +301,37 @@ static void showrev(wl *tail, int num) {
     printf("\n");
 }
 
-static void nuke_stdin(){
+static void findfwd(wl* head, const char* artiko, int num){
+    for(size_t i = 0; artiko[i] != '\0'; i++){
+        char c = toupper((unsigned char)artiko[i]);
+        int count = 0;
+        wl* current = head;
+        while(current != NULL && count < num){
+            if(current->word[0] == c){
+                printf("%s\n", current->word);
+                count++;
+            }
+            current = current->next;
+        }
+    }
+}
+
+static void findrev(wl* tail, const char* artiko, int num){
+    for(size_t i = 0; artiko[i] != '\0'; i++){
+        char c = toupper((unsigned char)artiko[i]);
+        int count = 0;
+        wl* current = tail;
+        while(current != NULL && count < num){
+            if(current->word[0] == c){
+                printf("%s\n", current->word);
+                count++;
+            }
+            current = current->prev;
+        }
+    }
+}
+
+static void nuke_stdin(){ //bismillah
     int c;
     while((c = getchar() != '\n' && c != EOF)); //apo sscanf 
 }
@@ -309,8 +360,12 @@ static int uniql(const char *word)
 
 static void printList(wl *head){
     while(head != NULL){
-        printf("%s -> ", head->word);
+        wl* current = head;
+        printf("%s", head->word);
         head = head->next;
+        if (current->next != NULL) {
+            printf(" -> ");
+        }
     }
     printf("\n");
 }
